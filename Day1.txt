@@ -1,0 +1,346 @@
+AWS Bigdata 
+Trainer: Prashant Nair
+===============================================================================================
+
+Day1 Agenda
+------------
+
+Course Introduction
+Revisiting Cloud Computing ---------------------- (Azure Day1 Notepad)
+Revisiting Bigdata ------------------------------ (Bigdata Day1 Notepad)
+Bigdata Project Phases -------------------------- (BIgdata Day1 Notepad)
+Introducing to the world of AWS
+AWS Bigdata Components in Brief
+Lab Introduction
+AWS Basics and Pre-requisities Lab Practice
+
+
+
+AWS for Bigdata Engineering 
+----------------------------
+
+AWS Certified Data Analytics Speciality (DAS - C01)
+
+
+1. Collection 
+	a. Amazon Kinesis (Data Stream | Firehose ) (theory and Hands-on)
+	b. AWS Snowball (Theory)
+	c. AWS DMS
+	d. AWS Direct Connect
+	e. AWS SQS
+
+2. Storage
+	a. S3 + Glacier (Theory and Hands-on)
+	b. DynamoDB (Basics Hands-on Exercise and Theory)
+	
+3. Processing
+	a. AWS Lambda (Theory and Hands-on)
+	b. AWS Glue (Theory and Hands-on)
+	c. Amazon EMR (Theory and Hands-on)
+	d. Amazon Sagemaker (Theory and Hands-on)
+
+4. Analysis
+	a. Amazon Athena
+	b. Amazon Redshift
+	c. AWS Kinesis Data Analytics
+	
+5. Visualization (Theory)
+	a. Amazon Quicksight (Basic Intro with Basic Hands-on)
+	
+6. Data Security (Theory)
+
+Lab
+----
+
+Quota: $16 
+Lab Time Per session: 5 hours (In a day you can launch total 5 session!)
+Your AWS account 
+
+
+
+
+
+
+
+
+
+
+Pre-req
+--------
+
+Lab1: Provision a Virtual Machine with Linux OS
+
+
+1. Type ec2 on search box and go to the dashboard'
+2. Click on Launch Instance > Launch Instance > Amazon Linux 2 AMI (HVM), SSD Volume Type > t2.micro > Launch > Create a new Key Pair (Download the KeyPair and Save it to reuse the same for connecting to the machine) > Launch Instance
+3. Go to EC2 Dashboard > Instances . Ensure the instance is in running state and then select the instance and click on Connect > EC Instant Connect.
+
+
+
+Lab2: Accessing VM
+
+Download putty.zip from GDrive
+
+For Windows Users:
+
+1. Convert pem key file into ppk key file. This can be done using PUTTYGEN.exe
+
+2. OPen Putty.exe and Copy paste the hostname in the Host Name
+
+3. On the left hand side menu, click SSH > Auth.  and set the private key 
+
+4. Click on Connect
+
+
+
+Lab 3: How to create security roles for any AWS object?
+
+IAM -- Identity Access Management
+
+This service in AWS allows admins or users to create a new role or to create access token.
+
+Example: We are going give our AWS instance administrator rights to access and control any AWS service in my account.
+
+
+1. Go to IAM dashboard
+2. On the left hand side menu, click on Access Management > Roles
+3. Click on Create Role
+4. Select EC2 and click on Next:Permissions
+5. Attach the following policies:
+	AdministratorAccess
+6. Click on Next > Next > Give a name to the role named 'ec2-admin' and ensure policy is attached and click on Create role
+
+7. Ensure the role is listed on the table.
+
+
+
+Lab 4: How to attach the role in the object?
+
+1. Go to the appropriate service (EC2 dashboard)
+2. Select the machine on which the role is to be attached
+3. Click on Actions > Security > Modify IAM role > Select the role > Save
+
+Lab 5: How to use S3 to store data?
+
+Amazon Simple Storage Service ----> Similar to GDrive but you can have a raw storage or you can have a shared storage
+
+Bucket -----> Main Folder in S3
+Objects ----> Sub Folder in the main folder or File in S3 bucket
+
+
+1. Go to S3 dashboard
+2. Create a bucket named dataset64675
+3. Try creating a folder named transactions
+4. Try Uploading a file.
+
+
+
+
+
+
+
+Data Acquisition Technique in AWS 
+==================================
+
+Opensource Bigdata Platform
+---------------------------
+
+File --------> copyFromLocal --------------> HDFS
+
+DB ----------> Apache Sqoop ---------------> HDFS
+	       Apache Spark
+
+Streams ---->  Apache Flume ---------------> HDFS
+	       Apache Kafka
+	       Apache Spark
+
+
+AWS-style
+---------
+
+File --------> Direct Upload --------------> S3
+
+Streams ---->  Kinesis Firehose ---------------> S3
+	      
+
+Flume ----> Spooling Directory Service
+
+Folder ---------------> HDFS
+
+
+
+
+Major Lab1: 
+--------------
+Goal: Collecting Streaming data and store the same in S3 !!!!
+
+Create a Lab to Emulate this Goal:
+
+1. Having a VM which will perform two things
+
+	a. Generate Logs in the form of stream and store the stream in some location in VM
+		(LogGenerator.zip) ----> Python File + dataset
+		Goal: Read data from dataset and create data streams out of it which will be
+			stored in the destination location (/var/log/cadabra)
+
+	b. Install and configure an agent that will read data from destination location and                transfer the data to the delivery stream (CadabraOrders).
+
+2. A component that will accept the data from Agent
+
+
+
+
+Stream Source ---------> AWS Kinesis firehose ------------------> S3 bucket
+
+If your input source is a Data Stream, you must prefer to use Kinesis service in AWS.
+
+					  (DirectPUT -->S3)
+EC2       ------------> EC2 ------------->Kinesis Firehose --------------------> S3
+instance                instance
+(LogGenerator.py)       (Agent:
+			Get the data from /var/log/cadabra
+			and push the data to CadabraOrders
+			(AWS Kinesis Firehose Delivery
+			Stream name))
+
+
+Plan of Action:
+
+1. Create EC2 instance that will generate streams and redirect the streams to the Kinesis Firehose Data Pipeline.
+		
+	a. Create EC2 Instance
+	b. Download the dataset in EC2 instance
+	c. Download LogGenerator.py in EC2 instance
+	d. Download and install AWS-KINESIS-AGENT which will help redirecting the stream from            /var/log/cadabra to Kinesis Data Pipeline
+
+
+
+
+Lab5: Creating a data pipeline for stream data (Data Acquisition)
+
+
+
+Part1: Setting up Data Server that will emit realtime logs
+---------------------------------------------------------------
+
+1. Create a new EC2 instance and login the same via putty.
+2. Install AWS kinesis firehose agent in the data source machine
+	
+sudo yum install -y aws-kinesis-agent
+
+3. Install a dummy program that can generate dummy logs.
+
+wget https://raw.githubusercontent.com/prashantnair2050/AWSBigdataMat/main/LogGenerator.zip
+
+unzip LogGenerator.zip
+
+chmod a+x LogGenerator.py
+
+ls
+
+This programs generates realtime stream of logs and store the same in the folder /var/log/cadabra
+
+
+4. Create necessary folders
+
+sudo mkdir /var/log/cadabra
+
+
+Part2: Setup Kinesis Delivery Stream named CadabraOrders in Kinesis Firehose. This stream wwill get the data from Agent and store the same in S3
+-----------------------------------------------------------------------------------------------
+
+
+5. Create Kinesis Data Firehose Delivery Stream
+
+	a. On the search bar type "kinesis" and click on Kinesis
+	b. Click on/Select Kinesis Data Firehose > Create Delivery Stream
+	c. Select Source as Direct PUT and Destination as Amazon S3
+	d. Set the delivery stream name as "CadabraOrders"
+	e. Go to Destination Settings > Click on Create (to create a bucket). Once bucket is created go back to Kinesis tab and click on Browse > Select relevant bucket and click on Choose.
+	f. Once done scroll down and click on "Create delivery Stream"
+
+
+Part3: Configure Agent in EC2 to deliver streams from /var/log/cadabra to CadabraOrders delivery stream
+-----------------------------------------------------------------------------------------------
+	
+6. Configure the Kinesis Firehose Agent to get the realtime streams from /var/log/cadabra and store the same in my AWS Kinesis delivery stream object. Go to Putty and perform the following
+
+	a. cd /etc/aws-kinesis/
+	b. vi agent.json
+
+{
+  "cloudwatch.emitMetrics": true,
+  "kinesis.endpoint": "",
+  "firehose.endpoint": "firehose.us-east-1.amazonaws.com",
+
+  "flows": [
+    {
+      "filePattern": "/var/log/cadabra/*.log",
+      "deliveryStream": "CadabraLogs"
+    }
+  ]
+}
+
+7. Start the agent
+
+sudo service aws-kinesis-agent stop
+
+sudo service aws-kinesis-agent start
+
+cd\
+
+8. Emit some logs
+
+sudo ./LogGenerator.py 100000
+
+To check the status of the agent, create a duplicate session in Putty(Open a new session in pUtty for EC2 instance) and type the following command
+
+tail -f /var/log/aws-kinesis-agent/aws-kinesis-agent.log
+
+
+
+Check teh S3 bucket to verify whether data is stored successfully or not !!!
+
+
+
+
+
+
+
+
+9. Incase if you face any problems you need to check the logs
+
+For Kinesis firehose agent the log location is /var/log/aws-kinesis-agent/
+
+Problem detected ! Permissions and CREDENTIALS issue!
+Solution: Add permission using IAM (Identity Access Management)
+
+	a. Go to search box , type 'iam' and click the same
+	b. Click on Roles > Create Role
+	c. Click on EC2 > Permissions > Select " Administrator Access" > Click on Tags > Review > Give some role name "ec2-admin" > Click on Create Role.
+	d. Go to EC2 page > Select the relevant machine > Actions > Security > Modify IAM Role
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+

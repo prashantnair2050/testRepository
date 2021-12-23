@@ -1,0 +1,196 @@
+AWS Bigdata --- Day 5
+Trainer: Prashant Nair
+=============================================================================================
+
+Agenda:
+
+Revisiting Apache Hadoop 
+EMR Service					
+
+
+
+
+
+					Apache Hadoop
+						|
+	------------------------------------------------------------------------------------
+	|					|					   |
+Storage Part of Hadoop		Resource Management Layer	    Processing part of Hadoop
+HDFS				YARN					MRv2
+(Hadoop Distributed 		(Yet Another Resource 			(MapReduce)
+File System)			Negotiator)
+
+
+
+
+
+
+
+
+
+
+
+EMR (Elastic Map Reduce)
+
+- Managed Hadoop Cluster 
+
+
+
+
+
+
+
+
+
+
+Lab1: Initialize EMR cluster
+
+1. IAM
+	- Create a role for EMR service (AdministratorAccess)		
+	- Select EMR > EMR Role for EC2
+
+2. Create the Key Pair (ppk file)
+	- Go to EC2 dashboard
+	- On the left side menu > Network and Security > Key Pairs
+	- Select ppk file and downloadd the same (Download will be automatic)
+
+3. Setup EMR cluster
+	- Go to EMR dashboard
+	- Click on Create Cluster
+	- It may take around 10-15 mins to provision the cluster. Once provisioned configure our           access to the backend(Master)
+	- We need to enable Port 22 inmaster. To add the rule in firewall
+		- Ensure you are in the dashboard of the cluster you created,
+		- Go to Security and Access >Security Groups for Master
+		- Select ElasticMapReduce-master > Inbound Rules > Edit inbound rules> Add rule
+
+	Select SSH & MyIP and Click on Save Rules
+
+
+Access Hue in EMR cluster
+==========================
+
+1. Default port number of Hue Web UI -----> 8888
+
+Select ElasticMapReduce-master > Inbound Rules > Edit inbound rules> Add rule
+
+	Select CustomTCP , Port no 8888 & MyIP and Click on Save Rules
+
+2. Try accessing Hue UI using master hostname with port no 8888
+
+	e.g. http://ec2-3-236-224-99.compute-1.amazonaws.com:8888/
+
+
+
+Hive
+=====
+
+
+create database awsclass;
+
+create table awsclass.employee
+(eid int,
+ename string,
+esal int)
+ROW FORMAT DELIMITED
+fields terminated by ','
+lines terminated by '\n';
+
+
+
+LOAD DATA inpath '/user/hadoop/emp/employee' into table awsclass.employee;
+
+
+select * from awsclass.employee;
+
+
+
+Assignment
+------------
+
+Upload txns in S3
+
+Create an Internal table for txns. 
+
+txnid, txndate, custid, amount, category, subcategory, city, state, txntype
+
+Perform the following:
+
+1. Find the total revenue generated based on category
+2. Find the total number of transactions and total amount for each transaction type
+3. Find the best selling category 
+4. Find the worst selling category
+5. Find the best selling subcategory in the worst selling category
+
+
+
+
+
+
+
+
+
+
+
+
+
+Solutions:
+
+create external table txns
+(txnid bigint,
+txndate string,
+custid bigint,
+amount double,
+category string,
+subcategory string,
+city string,
+state string,
+txntype string)
+row format delimited
+fields terminated by ','
+lines terminated by '\n'
+location '/user/hadoop/transactions';
+
+select * from txns limit 3;
+
+select category,sum(amount) as revenue from txns group by category;
+
+select txntype, count(txntype) as totalCount, sum(amount) as totalAmount from txns group by txntype;
+
+select category,sum(amount) as revenue from txns group by category order by revenue desc limit 1;
+
+select category,sum(amount) as revenue from txns group by category order by revenue asc limit 1;
+
+
+select subcategory , sum(amount) as revenue from txns where category = 'Dancing' group by subcategory;
+
+
+
+
+Home Assignment
+
+1. Practice all Hive Queries you learned in Hadoop class
+2. Try one code of Apache Pig you learned in Hadoop class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

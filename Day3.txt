@@ -1,0 +1,221 @@
+AWS Bigdata
+Trainer: Prashant Nair
+===========================================================================================
+
+Agenda:
+--------
+S3 Theory and Hands-on
+AWS Kinesis Theory
+
+
+S3 Basic Hands-on
+---------------------
+
+1. Create a Bucket with Public Access Enabled
+	
+	1. IN search bar type "s3" and go to the dashboard.
+	2. Click on Create Bucket
+	3. Assign name to the bucket and uncheck Block Public Access
+	4. Click on Create Bucket
+
+2. Upload a sample file 
+
+3. Check if the sample file is accessible via link (You should not be able to access)
+
+4. Go to Permission Tab of the bucket and enable ACL via Object Ownership.
+
+5. Go To Permission Tab of the object > Click on Edit > Everyone (Enable Read)
+
+6. Check if the sample file is accessible via link (You should be able to access)
+
+
+
+Demo on S3 Glacier
+-----------------------
+
+
+1. Upload the file and Change the storage class to Glacier
+	a. Click on Uploaded File in Bucket> Go to Properties
+	b. Go to Storage Class > Edit > Select Glacier > Ok
+
+2. Try Retrieval .
+
+
+
+
+
+
+Prep Work
+==========
+
+Producer to Kinesis:
+--------------------
+Stream Data --------> Agent ------> Kinesis Data Stream ------> Consumer.py ---> DynamoDB
+				(CadabraOrdersPreprocess)
+
+
+Providing Access Keys to the agent.json
+=========================================
+
+1. Stop the Kinesis Agent
+
+sudo service aws-kinesis-agent stop
+
+2. Create Access Key
+	1. Go to IAM 	
+	2. Create User
+	3. Create Group and add AdministratorAccess
+	4. Download CSV
+
+3. Add the Keys in the config
+
+{
+  "cloudwatch.emitMetrics": true,
+  "kinesis.endpoint": "",
+  "firehose.endpoint": "",
+  "awsAccessKeyId": "AKIAZ3RCE7YWEYRN3H6A",
+  "awsSecretAccessKey": "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",
+
+  "flows": [
+{
+      "filePattern": "/var/log/cadabra/*.log",
+      "kinesisStream": "CadabraOrders",
+      "partitionKeyOption": "RANDOM",
+      "dataProcessingOptions": [
+         {
+            "optionName": "CSVTOJSON",
+            "customFieldNames": ["InvoiceNo", "StockCode", "Description", "Quantity", "InvoiceDate", "UnitPrice", "Customer", "Country"]
+         }
+      ]
+    }
+  ]
+}
+
+
+
+Lab: Storing data in Amazon DynamoDB using a custom Consumer Application
+=========================================================================
+
+
+We are going to use a Python Application that can interact with the AWS services and can initiate data transfer from Kinesis Data Stream to Amazon DynamoDB
+
+
+Package: BOTO3
+
+
+
+
+
+wget https://raw.githubusercontent.com/prashantnair2050/AWSBigdataMat/main/Consumer.py
+
+
+
+
+
+
+
+
+
+
+
+Lab Exercise: (30min Time)
+-------------
+
+1. Deploy an Ec2 instance and install kinesis agent and download /setup LogGenerator.py (Lab2 from Day2)
+
+2. Create a Kinesis Data Stream named CadabraOrders with one shard 
+
+3. Create a DynamoDB Table named CadabraOrders with
+	PrimaryKey: CustomerID (Datatype: Number)
+	SortKey: OrderID (Datatype: String)
+
+4. Provision another EC2 instance with an intention to Run Consumer.py
+	- Boto3 
+
+		pip3 install boto3
+
+	- Give permission to Boto3 to access my AWS resources
+		- Go To IAM > Users > Create User
+		- Create a group with AdministratorAccess Permission
+		- Click on Next > Finish > Download teh Credential File (csv)
+
+
+		AKIAZ3RCE7YWBSYCLR6Z
+		LraXqmPfPiVpHrJLwB1CS1WNeVQdIUe5o1sC6WDI
+
+	- Setup Boto3 with Access Key and Secret Key
+	
+		- Ensure you are in home dir (/home/ec2-user)	
+			pwd
+
+		- Create a hidden dir named aws
+
+			mkdir .aws
+
+			ls -a
+
+		- Get inside .aws and create a file named credentials
+			
+			cd .aws
+			vi credentials
+
+[default]
+aws_access_key_id=AKIAZ3RCE7YWEYRN3H6A
+aws_secret_access_key=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
+
+			Save the credentials file
+
+		- Create config file. This file is used to inform the AWS region to connect.
+
+			vi config
+
+[default]
+region=us-east-1
+
+5. Download Consumer.py
+
+wget https://raw.githubusercontent.com/prashantnair2050/AWSBigdataMat/main/Consumer.py
+
+chmod a+x Consumer.py
+
+6. Execute Consumer.py
+
+Session1:
+
+python3 Consumer.py
+
+Session2: 
+
+tail -f /var/log/aws-kinesis-agent/aws-kinesis-agent.log
+
+Session3:
+
+sudo ./LogGenerator.py 10000
+
+
+Homework
+---------
+Create a Boto3 App that can read the txns file from S3 (txnbucket234/txns) and store the content in DynamoDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

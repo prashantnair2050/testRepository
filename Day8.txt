@@ -1,0 +1,26 @@
+
+
+
+Class work Assignment
+======================
+
+Create a manual pipeline that can perform the following
+
+LogGenerator ----> AWS Kinesis Data Stream ---> Kinesis Firehose ---> s3 --> AWS GLue ---> Athena
+
+
+Answer the following questions:
+1. Find the top 3 loyal customers and their location
+2. Find the costly product 
+3. Find the product that has high demand
+4. Find the product that has low demand.
+
+
+
+
+
+Data pipeline
+==============
+
+https://aws.amazon.com/premiumsupport/knowledge-center/s3-data-pipeline-transfer/
+
